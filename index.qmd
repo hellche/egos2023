@@ -1,0 +1,198 @@
+---
+title: "Work-life and work-work balance in universities and research centers in Russia. What can we do to stop reinforcing gender gaps?"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,  warning = FALSE, message =  FALSE)
+# knitr::opts_chunk$set(fig.pos = 'p') # Places figures on pages separate from text
+# knitr::opts_chunk$set(out.width = '70%', dpi=300) # Figure resolution and size
+# knitr::opts_chunk$set(fig.env="figure") # Latex figure environment
+```
+
+```{r packages}
+library(tidyverse)
+library(haven)
+library(readr)
+library(table1)
+library(sjlabelled)
+library(ggpubr)
+library(ggridges)
+library(ggsignif)
+library(patchwork)
+library(expss)
+library(FactoMineR)
+library(factoextra)
+library(RColorBrewer)
+library(stringr)
+library(stringi)
+library(tibble)
+library(ggpmisc)
+library(readxl)
+library(DT)
+library(wesanderson)
+library(likert)
+library(ggrepel)
+library(kableExtra)
+#library(glmmTMB)
+#library(sjPlot)
+#library(sjmisc)
+#library(jtools)
+#library(ggstance)
+#library(huxtable)
+#library(MASS)
+#library(pscl) 
+```
+
+```{r functions}
+pvalue <- function(x, ...) {
+    # Construct vectors of data y, and groups (strata) g
+    y <- unlist(x)
+    g <- factor(rep(1:length(x), times=sapply(x, length)))
+    if (is.numeric(y)) {
+        # For numeric variables, perform a standard 2-sample t-test
+        p <- t.test(y ~ g)$p.value
+    } else {
+        # For categorical variables, perform a chi-squared test of independence
+        p <- chisq.test(table(y, g),correct = TRUE, simulate.p.value = TRUE, B = 10000)$p.value
+    }
+    # Format the p-value, using an HTML entity for the less-than sign.
+    # The initial empty string places the output on the line below the variable label.
+    c("", sub("<", "&lt;", format.pval(p, digits=3, eps=0.001)))
+}
+
+all_test <- function(x, ...) {
+    # Construct vectors of data y, and groups (strata) g
+    y <- unlist(x)
+    g <- factor(rep(1:length(x), times=sapply(x, length)))
+    if (is.numeric(y)) {
+        # For numeric variables, perform a standard 2-sample t-test
+        p <- t.test(y ~ g)$p.value
+        t <- t.test(y ~ g)$statistic
+        par <- t.test(y ~ g)$parameter
+    } else {
+        # For categorical variables, perform a chi-squared test of independence
+        p <- chisq.test(table(y, g))$p.value
+        t <- chisq.test(table(y, g))$statistic
+        par <- chisq.test(table(y, g))$parameter
+    }
+    # Format the p-value, using an HTML entity for the less-than sign.
+    # The initial empty string places the output on the line below the variable label.
+    c("", paste0(sub("<", "&lt;", format.pval(p, digits=3, eps=0.001)), "; val test stat = " , round(t, digits=3), "; df =" , round(par, digits=3)))
+}
+```
+
+```{r data}
+# data wrap in new_search.rmd
+set <- read_csv("data/set.csv")
+
+df <- set %>% 
+  filter(wave == 'wave_1_2'| wave == 'wave_2_5' | wave ==  'wave_2_6') %>% 
+  filter(age_int >= 21 & age_int <= 80) %>% 
+  filter(type_doj != "Другое")
+```
+
+#### Elena Chechik {.unnumbered}
+
+*Center for Institutional Analysis of Science & Education European University at St. Petersburg*
+
+###### Figure S1: Two-humped age distribution of men
+
+###### Figure S2: Percentage of teachers in tertiary education who are female (%)
+
+```{r data2}
+NATMON_DS_18112022080205161 <- read_csv("data/NATMON_DS_18112022080205161.csv")
+```
+
+```{r}
+cont <- c('Germany','Kazakhstan','Finland', 'United States of America','Switzerland', 'Spain', 'Russian Federation')
+
+temp.dat <- NATMON_DS_18112022080205161 %>% filter(Country %in% cont) %>% 
+  filter(Time >= 2000) 
+
+ggplot() + 
+  geom_hline(yintercept = 50, color = "red", linetype = "dashed", alpha = 0.8) +
+  geom_line(data = temp.dat, aes(Time, Value, color = LOCATION)) +
+  geom_point(data = temp.dat, aes(Time, Value, color = LOCATION)) +
+  geom_text(data = temp.dat %>% filter(Time == last(Time)), 
+            aes(label = LOCATION, 
+                x = Time + 0.9, 
+                y = Value, 
+                color = LOCATION)) + 
+  guides(color = FALSE) +
+  scale_x_continuous(breaks = scales::pretty_breaks(10)) +
+  scale_color_brewer(palette = "Dark2", direction = -1) +
+  labs(x = "" , y = "Share of women (%)",
+       caption = "UNESCO Institute for Statistics (UIS)") +  
+  ylim(15, 85) +
+  theme_test() + 
+  theme(axis.title.x = element_blank(),
+        panel.grid.major.y = element_line(size = 0.1, color = "grey70", linetype = "solid"),
+        legend.position = "right",
+        legend.title = element_blank())
+```
+
+###### Table S1: Distribution of women and men by age of having first child and PhD/DS defense
+
+```{r}
+Tab_1 <- table1(~ age_int  + 
+         first_ch_age + 
+         kan_age + doc_age | sex,
+  data = df,
+  overall = FALSE,
+  extra.col = list(`P-value` = pvalue))
+
+Tab_1 <- as.data.frame(Tab_1)[-1, ]
+Tab_1[1, 1] <-  "Age"
+Tab_1[4, 1] <-  "Age of having a first child"
+Tab_1[8, 1] <-  "Age of a PhD defense"
+Tab_1[12, 1] <-  "Age of a DS defense"
+
+Tab_1[2, 4] <-  "< 0.001"
+Tab_1[5, 4] <-  "< 0.001"
+Tab_1[9, 4] <-  "0.224"
+Tab_1[13, 4] <-  "0.377"
+rownames(Tab_1) <- NULL
+
+kable(Tab_1,
+      align = c("l","c", "c", "r"),
+      col.names = c(" ","Female<br/> (N=1494)",
+                    "Male<br/> (N=901)",
+                    "p-value"),
+      escape = FALSE) %>%
+  kable_styling(full_width = F, position = "center", font_size = 13)
+```
+
+##### Figure S3: Dynamics of age at first birth for women
+
+```{r}
+ros <- read_delim("data/rosstat.csv", 
+                  delim = ";", escape_double = FALSE, trim_ws = TRUE)
+ros <- ros %>% 
+  pivot_longer(c(`19 и <`:`не указан \nnot stated`), names_to = "age", values_to = "count")
+
+ros1 <- ros %>% mutate(sh = 100 * count / `\nTotal`,
+               sh = round(sh, digits = 2)) %>% 
+  filter(`\nYears` >= 2000) %>% 
+  mutate(age = if_else(age == "50 и >", "50 и >", age)) %>% 
+  filter(age != "не указан \nnot stated") 
+
+ggplot() +
+  geom_line(data = ros1, aes(`\nYears`, sh, group = age, color = age )) +
+  geom_point(data = ros1, aes(`\nYears`, sh, group = age, color = age )) +
+  geom_text_repel(data = ros1 %>% filter(`\nYears` == last(`\nYears`)), 
+                  aes(label = age, 
+                      x = `\nYears` + 1,
+                      y = sh,
+                      color = age), 
+                  nudge_x = 0, direction = "y", 
+                  hjust = "center", box.padding = -0.01) +
+  guides(color = FALSE) +
+  scale_x_continuous(breaks = scales::pretty_breaks(10)) +
+  scale_color_brewer(palette = "Dark2", direction = -1) +
+  labs(x = "" , y = "Share of age group (%)") +
+  theme_test() + 
+  theme(axis.title.x = element_blank(),
+        panel.grid.major.y = element_line(size = 0.1, color = "grey70", linetype = "solid"),
+        legend.position = "right",
+        legend.title = element_blank()) 
+```
