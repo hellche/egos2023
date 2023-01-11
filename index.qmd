@@ -95,7 +95,51 @@ df <- set %>%
 
 *Center for Institutional Analysis of Science & Education European University at St. Petersburg*
 
-###### Figure S1: Two-humped age distribution of men
+<br />
+<br />
+
+
+###### Figure S1: Visualization of the leak of men from academia in the 90s and early 00s: Two-humped distribution by age for male economists with the drop in age 50-55. 
+
+```{r}
+#| fig-align: 'center'
+
+p <- df %>% 
+  ggplot(aes(age_int, group = sex, fill = sex)) +
+  geom_density(alpha = 0.8, position = 'identity') +
+  scale_fill_manual(values = c("#ffbf49", "#a8a8a8"), guide = FALSE) +
+  labs(fill="", x = "", y = "Density") +
+  theme_test() + 
+  theme(legend.position = 'none',
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.x = element_text(size=20),
+        axis.title.y = element_text(size=15))
+
+data.tb <- tibble(x = 80, y = 70, 
+                  plot = list(p + theme_test(8) + 
+                                theme(legend.position = 'none',
+                                      plot.background = element_rect(fill = "NA"),
+                                      axis.text.y = element_blank(),
+                                      axis.ticks.y = element_blank(),
+                                      axis.text.x = element_text(size=11),
+                                      axis.title.y = element_text(size=11))))
+
+df %>% 
+  ggplot(aes(age_int, group = sex, fill = sex)) +
+  geom_plot(data = data.tb, aes(x, y, label = plot)) +
+  geom_bar(position = position_dodge(preserve = "single")) +
+  scale_fill_manual(values = c("#ffbf49", "#a8a8a8")) +
+  labs(fill="", x = "Age of respondent", y = "Number of respondents") +
+  theme_test() + 
+  theme(legend.position = "top",
+        axis.text.x = element_text(size = 8),
+        panel.grid.major.y = element_line(size = 0.1, 
+                                          color = "grey35", 
+                                          linetype = "solid"))
+```
+
+<br />
 
 ###### Figure S2: Percentage of teachers in tertiary education who are female (%)
 
@@ -104,6 +148,8 @@ NATMON_DS_18112022080205161 <- read_csv("data/NATMON_DS_18112022080205161.csv")
 ```
 
 ```{r}
+#| fig-align: 'center'
+
 cont <- c('Germany','Kazakhstan','Finland', 'United States of America','Switzerland', 'Spain', 'Russian Federation')
 
 temp.dat <- NATMON_DS_18112022080205161 %>% filter(Country %in% cont) %>% 
@@ -122,14 +168,17 @@ ggplot() +
   scale_x_continuous(breaks = scales::pretty_breaks(10)) +
   scale_color_brewer(palette = "Dark2", direction = -1) +
   labs(x = "" , y = "Share of women (%)",
-       caption = "UNESCO Institute for Statistics (UIS)") +  
+       caption = "Data: UNESCO Institute for Statistics (UIS)") +  
   ylim(15, 85) +
   theme_test() + 
   theme(axis.title.x = element_blank(),
         panel.grid.major.y = element_line(size = 0.1, color = "grey70", linetype = "solid"),
         legend.position = "right",
-        legend.title = element_blank())
+        legend.title = element_blank(),
+        plot.caption = element_text(face = "italic"))
 ```
+
+<br />
 
 ###### Table S1: Distribution of women and men by age of having first child and PhD/DS defense
 
@@ -162,9 +211,13 @@ kable(Tab_1,
   kable_styling(full_width = F, position = "center", font_size = 13)
 ```
 
+<br />
+
 ##### Figure S3: Dynamics of age at first birth for women
 
 ```{r}
+#| fig-align: 'center'
+
 ros <- read_delim("data/rosstat.csv", 
                   delim = ";", escape_double = FALSE, trim_ws = TRUE)
 ros <- ros %>% 
@@ -189,10 +242,12 @@ ggplot() +
   guides(color = FALSE) +
   scale_x_continuous(breaks = scales::pretty_breaks(10)) +
   scale_color_brewer(palette = "Dark2", direction = -1) +
-  labs(x = "" , y = "Share of age group (%)") +
+  labs(x = "" , y = "Share of age group (%)",
+       caption = "Data: Russian Statistical Agency") +
   theme_test() + 
   theme(axis.title.x = element_blank(),
         panel.grid.major.y = element_line(size = 0.1, color = "grey70", linetype = "solid"),
         legend.position = "right",
-        legend.title = element_blank()) 
+        legend.title = element_blank(),
+        plot.caption = element_text(face = "italic")) 
 ```
