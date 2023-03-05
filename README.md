@@ -1,5 +1,7 @@
 ## EGOS 2023
 
+**EGOS Shortpaper text:** <https://hellche.github.io/egos2023/files/text.pdf>
+
 **Online Supplementary Materials:** <https://hellche.github.io/egos2023/>
 
 `index.qmd` - code for rendering Online Supplementary Materials page.
