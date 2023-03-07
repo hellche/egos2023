@@ -1,4 +1,4 @@
-## EGOS 2023 Shortpaper: Work-life and work-work balance in universities and research centers in Russia. What can we do to stop reinforcing gender gaps?
+## EGOS 2023 shortpaper: Work-life and work-work balance in universities and research centers in Russia. What can we do to stop reinforcing gender gaps?
 
 *Chechik E.*
 
@@ -8,4 +8,4 @@
 
 `index.qmd` - code for rendering Online Supplementary Materials page.
 
-Folder `_code` contains figures and tables for the EGOS2023 paper *Work-life and work-work balance in universities and research centers in Russia. What can we do to stop reinforcing gender gaps?*
+Folder `_code` contains figures and tables for the EGOS2023 shortpaper.
